@@ -147,6 +147,8 @@ class Analyze(BaseModel):
 def analyze_unfollow():
     try:
         return ig.non_followers()
+    except ig.IncompleteList as e:
+        raise HTTPException(502, str(e))
     except Exception as e:
         raise HTTPException(502, ig_error(e)[0])
 

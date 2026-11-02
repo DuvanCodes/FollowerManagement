@@ -81,11 +81,22 @@ def _short(u):
             "pic": str(u.profile_pic_url or ""), "private": u.is_private, "verified": bool(u.is_verified)}
 
 
+class IncompleteList(Exception):
+    pass
+
+
 def non_followers():
     """A quién sigo yo que no me sigue de vuelta."""
     with lock:
+        expected = cl.user_info(str(cl.user_id)).follower_count
         following = cl.user_following(str(cl.user_id))
         followers = cl.user_followers(str(cl.user_id))
+    # Si Instagram entrega la lista de seguidores incompleta, seguidores reales aparecerían como
+    # "no me sigue". El contador del perfil incluye cuentas desactivadas, así que se tolera un margen.
+    missing = expected - len(followers)
+    if missing > max(10, expected * 0.02):
+        raise IncompleteList(f"Instagram entregó {len(followers)} de tus {expected} seguidores. "
+                             "Para no dejar de seguir a nadie por error, intenta de nuevo en unos minutos.")
     fset = {str(k) for k in followers}
     return [_short(u) for pk, u in following.items() if str(pk) not in fset]
 
