@@ -1,5 +1,5 @@
-fastapi
-uvicorn[standard]
-instagrapi
-cryptography
-itsdangerous
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+instagrapi==3.2.2
+cryptography==50.0.2
+itsdangerous==2.2.0
