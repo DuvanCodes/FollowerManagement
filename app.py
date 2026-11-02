@@ -187,7 +187,10 @@ def run(kind, targets):
         job.update(status="running", resume_at=None)
         try:
             with ig.lock:
-                getattr(ig.cl, call)(int(t.pk))
+                ok = getattr(ig.cl, call)(int(t.pk))
+            # unfollow: Instagram puede responder sin error y no aplicarlo (follow da False si ya lo seguías)
+            if not ok and kind == "unfollow":
+                raise RuntimeError("Instagram no aplicó la acción")
         except Exception as e:
             msg, fatal = ig_error(e)
             log(f"@{t.username}: {msg}")

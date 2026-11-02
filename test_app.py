@@ -45,13 +45,13 @@ def test_non_followers_rejects_incomplete_list():
         user_id = 1
         followers = {}
 
-        def user_info(self, _):
+        def user_info(self, _, use_cache=True):
             return NS(follower_count=1000)
 
-        def user_following(self, _):
+        def user_following(self, _, use_cache=True):
             return {pk: user(pk) for pk in (2, 3)}
 
-        def user_followers(self, _):
+        def user_followers(self, _, use_cache=True):
             return self.followers
 
     ig.cl = Fake()
