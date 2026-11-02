@@ -158,7 +158,7 @@ function renderJob(j) {
       jobActive() ? h("button", { class: "danger", onclick: () => api("job/stop", {}).then(poll) }, "Detener") : null),
     h("p", { class: "muted" }, jobActive() ? h("span", { class: "spin" }) : null, label + wait),
     h("div", { class: "progress" }, h("i", { style: { width: pct + "%" } })),
-    j.log.length ? h("ul", { class: "log" }, [...j.log].reverse().map((l) => h("li", {}, h("time", {}, clock(l.t)), l.m))) : null);
+    j.log.length ? h("ul", { class: "log" }, [...j.log].reverse().map((l) => h("li", {}, h("time", {}, clock(l.t)), l.m))) : "");
 }
 
 function avatar(u) {
@@ -195,7 +195,7 @@ function renderPanel() {
         h("label", { class: "field", for: "tn", style: { width: "150px" } }, "Seguidores a revisar", n),
         h("button", { class: "primary", style: { marginBottom: "12px" } }, list ? "Volver a buscar" : "Buscar candidatos"))];
   }
-  p.replaceChildren(...head, list ? h("div", { id: "results" }) : null);
+  p.replaceChildren(...head, list ? h("div", { id: "results" }) : "");
   if (list) renderList();
   $("#bar")?.remove();
   if (list && list.length) { document.body.append(actionBar()); updateBar(); }
@@ -254,11 +254,12 @@ async function start(t) {
 /* ---------- ciclo de actualización ---------- */
 function who() {
   const st = S.st;
+  // replaceChildren convierte null en el texto "null": se filtra
   $("#who").replaceChildren(...(st.auth ? [
-    st.ig ? h("span", { class: "chip" }, "@" + st.ig) : null,
+    st.ig ? h("span", { class: "chip" }, "@" + st.ig) : h("span", { class: "muted" }, "Sin conectar"),
     st.ig ? h("button", { class: "ghost", onclick: () => api("ig/logout", {}).then(poll) }, "Cambiar cuenta") : null,
     h("button", { class: "ghost", onclick: () => api("auth/logout", {}).then(poll) }, "Salir"),
-  ] : []));
+  ] : []).filter(Boolean));
 }
 
 let timer;
