@@ -10,8 +10,8 @@ from urllib.parse import urlparse
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from instagrapi.exceptions import (BadPassword, ChallengeRequired, FeedbackRequired, LoginRequired,
-                                   PleaseWaitFewMinutes, RateLimitError, TwoFactorRequired)
+from instagrapi.exceptions import (BadPassword, ChallengeRequired, ClientThrottledError, FeedbackRequired,
+                                   LoginRequired, PleaseWaitFewMinutes, RateLimitError, TwoFactorRequired)
 from pydantic import BaseModel, Field
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -98,7 +98,8 @@ class IGLogin(BaseModel):
 
 def ig_error(e):
     """Traduce una excepción de Instagram a (mensaje, ¿detener todo?) y activa el enfriamiento."""
-    if isinstance(e, (PleaseWaitFewMinutes, RateLimitError)):
+    # ClientThrottledError = HTTP 429; desde instagrapi 3.2.13 ya no se oculta al descargar listas
+    if isinstance(e, (PleaseWaitFewMinutes, RateLimitError, ClientThrottledError)):
         limits.set_cooldown(3600)
         return "Instagram pidió esperar. Acciones pausadas 1 hora.", True
     if isinstance(e, (FeedbackRequired, ChallengeRequired)):

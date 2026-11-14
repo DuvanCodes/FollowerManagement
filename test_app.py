@@ -63,3 +63,17 @@ def test_non_followers_rejects_incomplete_list():
         assert [u["username"] for u in ig.non_followers()] == ["u2"]
     finally:
         ig.cl = None
+
+
+def test_throttle_triggers_cooldown():
+    import time
+
+    from instagrapi.exceptions import ClientThrottledError
+
+    import limits
+
+    try:
+        msg, fatal = appmod.ig_error(ClientThrottledError("429"))
+        assert fatal and limits.cooldown_until() > time.time() + 3000
+    finally:
+        limits._q("DELETE FROM kv WHERE k='cooldown'")
