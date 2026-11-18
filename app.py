@@ -11,7 +11,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from instagrapi.exceptions import (BadPassword, ChallengeRequired, ClientThrottledError, FeedbackRequired,
-                                   LoginRequired, PleaseWaitFewMinutes, RateLimitError, TwoFactorRequired)
+                                   LoginRequired, PleaseWaitFewMinutes, RateLimitError, TwoFactorRequired,
+                                   UserNotFound)
 from pydantic import BaseModel, Field
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -160,6 +161,8 @@ def analyze_follow(b: Analyze):
         raise HTTPException(422, "Indica la cuenta de la que quieres seguir a los seguidores")
     try:
         return ig.follower_candidates(b.username, b.amount)
+    except UserNotFound:
+        raise HTTPException(404, f"La cuenta @{b.username} no existe")
     except Exception as e:
         raise HTTPException(502, ig_error(e)[0])
 

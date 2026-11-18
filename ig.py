@@ -87,9 +87,11 @@ class IncompleteList(Exception):
 
 def non_followers():
     """A quién sigo yo que no me sigue de vuelta."""
-    # use_cache=False: instagrapi guarda las listas en memoria y no las actualiza bien al dejar de seguir
+    # use_cache=False: instagrapi guarda las listas en memoria y no las actualiza bien al dejar de seguir.
+    # *_v1 (API privada) directo: si falla, instagrapi reintenta por la web sin sesión y el error real
+    # (pausa, sesión vencida...) queda oculto tras un 401.
     with lock:
-        expected = cl.user_info(str(cl.user_id), use_cache=False).follower_count
+        expected = cl.user_info_v1(str(cl.user_id)).follower_count
         following = cl.user_following(str(cl.user_id), use_cache=False)
         followers = cl.user_followers(str(cl.user_id), use_cache=False)
     # Si Instagram entrega la lista de seguidores incompleta, seguidores reales aparecerían como
@@ -105,7 +107,7 @@ def non_followers():
 def follower_candidates(target, amount):
     """Seguidores de `target` que yo aún no sigo ni he seguido antes con esta app."""
     with lock:
-        tpk = cl.user_id_from_username(target)
+        tpk = cl.user_info_by_username_v1(target).pk
         theirs = cl.user_followers(str(tpk), amount=amount, use_cache=False)
         mine = {str(k) for k in cl.user_following(str(cl.user_id), use_cache=False)}
     me = str(cl.user_id)
